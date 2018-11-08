@@ -15,10 +15,13 @@
 │   +-- Makefile                ; compile everything needed
 │   +-- payload.s               ; our netcat shellcode
 │   \-- test_polymorphic.c      ; a test of the runtime decoding shellcode
-\-- server                      ; directory containing source of server
-    +-- ca647_server.c          ; commented server source (vulns flagged with XXX)
-    +-- description.txt         ; description of the server and related vulns
-    \-- Makefile                ; compile server properly
++-- server                      ; directory containing source of server
+|   +-- ca647_server.c          ; commented server source (vulns flagged with XXX)
+|   +-- description.txt         ; description of the server and related vulns
+|   \-- Makefile                ; compile server properly
+\-- videos                      ; videos of PoCs
+    +-- basic-payload.tar.gz    ; running a basic netcat shell exploit
+    \-- encoded-payload.tar.gz  ; running an encoded version of the basic one
 
 
 ####################################################################################
