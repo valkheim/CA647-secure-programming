@@ -12,7 +12,7 @@ int main() {
   if ((encode = malloc(shellcode_len)) == NULL)
     exit(2);
   for (i = 0 ; i < shellcode_len ; ++i)
-    encode[i] = shellcode[i] + 1;                           // Add 1 to each byte of netstat shellcode
+    encode[i] = shellcode[i] + 2;                           // Add 2 to each byte of netstat shellcode
 
   for (i = 0 ; i < shellcode_len ; ++i)                     // Print encoded shellcode
     printf("\\x%02x", ((unsigned char *)encode)[i]);
