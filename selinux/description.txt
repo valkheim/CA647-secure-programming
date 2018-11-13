@@ -148,32 +148,75 @@ Here is how to do it :
 --- Writing a module (ca647_server.te)
 ---------------------------------------                                          ---
 
-    module ca647_server 1.0.0;
-    
-    require {
-    	type unconfined_t;
-    	class process transition;
-    }
-    
-    # defines two new types
-    type ca647_server_t;
-    type ca647_server_exec_t;
-    
-    # if a process in the unconfined_r domain runs an executable whose type is
-    # ca647_server_t, the process should continue in ca647_server_t domain
-    role unconfined_r types ca647_server_t;
-    type_transition unconfined_t ca647_server_exec_t : process ca647_server_t;
-    
-    # Nothing is allowed for these two types. They are useless at the moment.
+$ cat ca647server.te
+module ca647server 1.0.0;
+
+require {
+  type unconfined_t; role unconfined_r;
+  class process transition;
+}
+
+# defines two new types
+type ca647server_t;
+type ca647server_exec_t;
+
+# if a process in the unconfined_r domain runs an executable whose type is
+# ca647_server_t, the process should continue in ca647_server_t domain
+role unconfined_r types ca647server_t;
+type_transition unconfined_t ca647server_exec_t : process ca647server_t;
+
+For the moment, the two declared types are useless because nothing is allowed for
+them !
+
+# ln -s /usr/share/selinux/devel/Makefile
+# make
+Compiling targeted ca647server module
+/usr/bin/checkmodule:  loading policy configuration from tmp/ca647server.tmp
+/usr/bin/checkmodule:  policy configuration loaded
+/usr/bin/checkmodule:  writing binary representation (version 17) to tmp/ca647server.mod
+Creating targeted ca647server.pp policy package
+rm tmp/ca647server.mod tmp/ca647server.mod.fc
+
+This generated our compiled .pp file as well as .fc and .if files.
+
+# make load
+Loading targeted modules: ca647server
+
+This loaded the module so it can be used by SELinux.
+
+# checkmodule -M -m ca647server.te -o ca647server.mod
+checkmodule:  loading policy configuration from ca647server.te
+checkmodule:  policy configuration loaded
+checkmodule:  writing binary representation (version 17) to ca647server.mod
+
+# semodule -i ca647server.pp                      ; install
+# setenforce 0                                    ; switch to permissive mode
+# chcon -r ca647server_exec_t ca647_server        ; set type of our server
+# ls -Z ca647_server                              ; verify security context
+unconfined_u:ca647server_exec_t:user_home_t:s0 ca647_server
+# setenforce 1                                    ; switch to enforced mode
 
 
 
-https://github.com/metacom27/stackoverflow-exploit-selinux
+LAST rules of our .te are not working :'(
 
-# semanage boolean -l | grep execstack
-selinuxuser_execstack          (on   ,   on)  Allow unconfined executables to make their stack executable.  This should never, ever be necessary. Probably indicates a badly coded executable, but could indicate an attack. This executable should be reported in bugzilla
+[root@ca647 server]# ps -Z
+LABEL                             PID TTY          TIME CMD
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 3391 pts/2 00:00:00 su
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 3397 pts/2 00:00:00 bash bash is unconfined_r domain OK
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 5456 pts/2 00:00:00 ps
+[root@ca647 server]# ls -Z ca647_server
+unconfined_u:ca647server_exec_t:user_home_t:s0 ca647_server ca647srver_exec_t domain OK
+[root@ca647 server]# ./ca647_server &
+[1] 5460
+[root@ca647 server]# ps -Z | grep ca647
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 5460 pts/2 00:00:00 ca647_server ; mais l'héritage :(
 
-memexec
+
+
+
+
+
 
 ##
 ### References

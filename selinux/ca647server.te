@@ -1,0 +1,17 @@
+module ca647server 1.0.0;
+
+require {
+  type unconfined_t; role unconfined_r;
+  class process transition;
+}
+
+# defines two new types
+type ca647server_t;
+type ca647server_exec_t;
+
+# if a process in the unconfined_r domain runs an executable whose type is
+# ca647_server_t, the process should continue in ca647_server_t domain
+role unconfined_r types ca647server_t;
+type_transition unconfined_t ca647server_exec_t : process ca647server_t;
+
+# Nothing is allowed for these two types. They are useless
