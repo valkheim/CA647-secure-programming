@@ -1,0 +1,10 @@
+*~
+*.swp
+
+exploit/exploit
+payload/decode_sub.o
+payload/encode_sub
+payload/payload
+payload/payload.o
+payload/test_polymorphic
+server/ca647_server

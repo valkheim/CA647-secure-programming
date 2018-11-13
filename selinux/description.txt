@@ -1,0 +1,187 @@
+####################################################################################
+                                      SELinux
+####################################################################################
+
+From Linux 2.6, SELinux is pluggable to kernel as a mandatory access control system.
+
+
+                                              operations
+                                  +--------+      |       +----------+
+            +----------+          |        |<-----+------>| HARDWARE |
+            | SOFTWARE |----+---->| KERNEL |              +----------+
+            +----------+    |     |        |<---.
+                         syscall  +--------+    |       +---------+
+                                                '-+---->| SELINUX |
+                                                  |     +---------+
+                                                  |
+                                               policies
+
+
+Default SELinux mode on lab vm can be fetched using getenforce :
+
+$ getenforce
+Enforcing
+# cat /etc/selinux/config
+SELINUX=enforcing
+SELINUXTYPE=targeted
+
+##
+### Security contexts
+######################                                                           ###
+
+ls -Z option prints security context. A security context (or label) is the mechanism
+used by SELinux to classify elements to be monitored (SELinux is a labelling system).
+The label consists in four words separated by ':'. Theses words are used to make
+access control decisions (MAC). Theses SELinux rules are checked after most common
+discretionary access control (DAC) rules.
+
+--
+--- Files contexts
+-------------------                                                              ---
+
+Let's discover the default context applied on our vulnerable server :
+
+$ ls -Z ca647_server
+unconfined_u:object_r:user_home_t:s0 ca647_server
+
+SELinux context words :
+
+0x00 - SELinux User (unconfined_u)
+       unconfined_u is the default user (think of users as a way of grouping roles)
+0x01 - Role (object_r)
+       Role field on a file (such as our server) is always object_r. Think of roles
+       as a way of grouping security types. (See Roles Based Access Control, RBAC)
+0x02 - Type (user_home_t)
+       Type component. Used for SELinux Type EnforcmenE
+0x03 - Level (s0)
+       Multi-level security (MLS).
+
+--
+--- Users contexts
+-------------------                                                              ---
+
+There is also a security context for users. Let's try it
+
+$ id -Z 
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+0x00 - SELinux User (unconfined_u)
+0x01 - Role (unconfined_r)
+0x02 - Type (unconfined_t)
+0x03 - Level (s0-s0)
+       This is the same as s0
+0x04 - Categories (c0.c1023)
+       Multi-Category Security (MCS). The categories user has acces (from c0 to c1023)
+
+--
+--- Processes contexts
+-----------------------                                                          ---
+
+Security contexts also applies on processes :
+
+$ ./ca647_server &
+[1] 2314
+$ ps Z | grep ca647_server
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 2314 pts/2 S   0:00 ./ca647_server
+
+--
+--- Other contexts
+-------------------                                                              ---
+
+ Network
+---------
+
+$ ss -lt4Z
+State       Recv-Q Send-Q            Local Address:Port                             Peer Address:Port                
+LISTEN      0      5                     127.0.0.1:vcom-tunnel                                 *:*                     users:(("ca647_server",pid=2516,proc_ctx=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023,fd=3))
+
+ Open files 
+------------
+
+$ lsof | grep ca647_server
+ca647_ser 2516         lain  txt       REG      253,0     12460     409548 /home/lain/CA647-secure-programming/server/ca647_server
+
+##
+### SELinux Policy module
+##########################                                                       ###
+
+Policies are written in a .te file (type enforcement file). Interface file (.if)
+that defines functions available to other policies, File Context file (.fc) that
+desribes the path labels and a package spec file (.spec) are optionnals.
+
+--
+--- Policy syntax
+------------------                                                               ---
+
+                          allow Source Target:Class Permission;
+
+This means "grant Permission to a process of domain (type) Source on objects of type
+Target and class Class".
+
+                      allow unconfined_t ca647_server_t:file read ;
+
+This means "allow processes in domain (type) unconfined_t read permission on files
+of type ca647_server_t"
+
+We can used auditallow that will log instead of simple allow.
+
+--
+--- With audit2allow
+----------------------                                                           ---
+
+There is a way to write policy module easily by turning selinux denial log messages
+into rules using audit2allow command.
+
+Here is how to do it :
+
+0x00 - Define a type for the ca647_server executable
+0x01 - Define a type for the ca647_server domain in which the server is running
+       and for the path of the files
+0x02 - The process runs in its own domain : every possible access to existing
+       objects (objects are files, directories, file descriptors, pipes, sockets,
+       network interfaces, ...) are denied by default (see semanage boolean -l).
+0x03 - Turn SELinux permissive mode ON
+0x04 - Run the ca647_server : bad accesses are logged
+0x00 - Use audit2allow -M to create rules (.te + compiled .pp)
+
+--
+--- Writing a module (ca647_server.te)
+---------------------------------------                                          ---
+
+    module ca647_server 1.0.0;
+    
+    require {
+    	type unconfined_t;
+    	class process transition;
+    }
+    
+    # defines two new types
+    type ca647_server_t;
+    type ca647_server_exec_t;
+    
+    # if a process in the unconfined_r domain runs an executable whose type is
+    # ca647_server_t, the process should continue in ca647_server_t domain
+    role unconfined_r types ca647_server_t;
+    type_transition unconfined_t ca647_server_exec_t : process ca647_server_t;
+    
+    # Nothing is allowed for these two types. They are useless at the moment.
+
+
+
+https://github.com/metacom27/stackoverflow-exploit-selinux
+
+# semanage boolean -l | grep execstack
+selinuxuser_execstack          (on   ,   on)  Allow unconfined executables to make their stack executable.  This should never, ever be necessary. Probably indicates a badly coded executable, but could indicate an attack. This executable should be reported in bugzilla
+
+memexec
+
+##
+### References
+###############                                                                  ###
+
+ 0x00 - https://wiki.gentoo.org/wiki/SELinux
+ 0x01 - http://www.billauer.co.il/selinux-policy-module-howto.html
+ 0x02 - https://selinuxproject.org/page/Building_a_Basic_Policy
+ 0x03 - 
+ 0x04 - 
+ 0x05 - 
