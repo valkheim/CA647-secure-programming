@@ -212,6 +212,9 @@ unconfined_u:ca647server_exec_t:user_home_t:s0 ca647_server ca647srver_exec_t do
 [root@ca647 server]# ps -Z | grep ca647
 unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 5460 pts/2 00:00:00 ca647_server ; mais l'héritage :(
 
+Devrait être dans son propre domaine. Ensuite on le lance, on regarde les warning dans le log et on en tire des
+règles avec audit2allow. Ensuite on fait la vidéo et on récupère les points
+
 
 
 
