@@ -1,33 +1,40 @@
 ####################################################################################
 
+There are subdirectories for each part of the assignment with some nested
+description.txt file. This one will only summarize files of the archive and annotate
+their contents.
 
 .
-+-- description.txt             ; main document
-+-- exploit                     ; directory containing server exploit related files
-│   +-- exploit.c               ; commented source code of exploit
-│   \-- Makefile                ; compile exploit
-+-- names.txt                   ; authors file
-+-- payload                     ; directory containing netcat payload files
-│   +-- decode_sub.s            ; a sub asm decoder for the encoded payload
-│   +-- description.txt         ; description of our approach of the exercise
-│   +-- encode_sub.c            ; a shellcode encoder (adder)
-│   +-- get_opcodes.sh          ; retrieve opcodes of an object file
-│   +-- Makefile                ; compile everything needed
-│   +-- payload.s               ; our netcat shellcode
-│   \-- test_polymorphic.c      ; a test of the runtime decoding shellcode
-+-- server                      ; directory containing source of server
-|   +-- ca647_server.c          ; commented server source (vulns flagged with XXX)
-|   +-- description.txt         ; description of the server and related vulns
-|   \-- Makefile                ; compile server properly
-+-- videos                      ; videos of PoCs
-|   +-- basic-payload.tar.gz    ; running a basic netcat shell exploit
-|   \-- encoded-payload.tar.gz  ; running an encoded version of the basic one
-\-- selinux                     ; selinux configuration files
-    +-- Makefile                ; make module and load it
-    +-- description.txt         ; description of our approach of the exercise
-    +-- ca647server.te          ;
-    +-- ca647server.if          ;
-    +-- ca647server.fc          ;
-    \-- ca647server.mod         ;
++-- description.txt                ; main document
++-- exploit                        ; directory containing server exploit files
+│   +-- exploit.c                  ; commented source code of exploit
+│   \-- Makefile                   ; compile exploit
++-- names.txt                      ; authors file
++-- payload                        ; directory containing netcat payload files
+│   +-- decode_sub.s               ; a sub asm decoder for the encoded payload
+│   +-- description.txt            ; description of our approach of the exercise
+│   +-- encode_sub.c               ; a shellcode encoder (adder)
+│   +-- get_opcodes.sh             ; retrieve opcodes of an object file
+│   +-- Makefile                   ; compile everything needed
+│   +-- payload.s                  ; our netcat shellcode
+│   \-- test_polymorphic.c         ; a test of the runtime decoding shellcode
++-- server                         ; directory containing source of server
+|   +-- ca647_server.c             ; commented server source (vulns flagged with XXX)
+|   +-- description.txt            ; description of the server and related vulns
+|   \-- Makefile                   ; compile server properly
++-- videos                         ; videos of PoCs
+|   +-- basic-payload.tar.gz       ; running a basic netcat shell exploit
+|   \-- encoded-payload.tar.gz     ; running an encoded version of the basic one
+\-- selinux                        ; selinux configuration files
+    +-- Makefile                   ; make module and load it
+    +-- description.txt            ; description of our approach of the exercise
+    +-- ca647_server.te            ; selinux type enforcment rules
+    +-- ca647_server.if            ; interface file
+    +-- ca647_server.fc            ; file context
+    +-- ca647_server.mod           ; selinux module
+    +-- ca647_server_selinux.8     ; man page of module
+    +-- ca647_server_selinux.spec  ; rpmbuild configuration
+    +-- ca647_server_selinux-[].rpm; rpm
+    \-- ca647_server.sh            ; script to make/update module
 
 ####################################################################################
