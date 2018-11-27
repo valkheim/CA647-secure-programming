@@ -1,0 +1,48 @@
+policy_module(ca647_server, 1.0.1)
+
+########################################
+#
+# Declarations
+#
+
+type ca647_server_t;
+type ca647_server_exec_t;
+init_daemon_domain(ca647_server_t, ca647_server_exec_t)
+
+#permissive ca647_server_t;
+
+########################################
+#
+# ca647_server local policy
+#
+allow ca647_server_t self:fifo_file rw_fifo_file_perms;
+allow ca647_server_t self:unix_stream_socket create_stream_socket_perms;
+
+domain_use_interactive_fds(ca647_server_t)
+
+files_read_etc_files(ca647_server_t)
+
+miscfiles_read_localization(ca647_server_t)
+
+sysnet_dns_name_resolve(ca647_server_t)
+
+#########################################
+#
+# Charles' settings
+#
+require {
+  type unconfined_t; role unconfined_r;
+  class process transition;
+}
+
+# When an unconfined_t process executes a file with context ca647_server_exec_t, 
+# then the resulting process should run in the ca647_server_t context.
+type_transition unconfined_t ca647_server_exec_t : process ca647_server_t;
+
+# transition can only occur when :
+# 1- unconfined_t (origin domain) has execute permission on the file
+allow unconfined_t ca647_server_exec_t:file execute;
+# 2- ca647_server_exec_t (the file context) is identified as an entry point for ca647_server_t (the target domain)
+allow unconfined_t ca647_server_exec_t:file entrypoint;
+# 3- unconfined_t (origin domain) is allowed to transition to ca647_server_t (target domain)
+allow unconfined_t ca647_server_t:process transition;

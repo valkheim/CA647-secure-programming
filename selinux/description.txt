@@ -148,86 +148,112 @@ Here is how to do it :
 --- Writing a module (ca647_server.te)
 ---------------------------------------                                          ---
 
-$ cat ca647server.te
-module ca647server 1.0.0;
+Get context from path :
 
-require {
-  type unconfined_t; role unconfined_r;
-  class process transition;
-}
+$ matchpathcon /home/lain/CA647-secure-programming/server
 
-# defines two new types
-type ca647server_t;
-type ca647server_exec_t;
+Generate an initial SELinux policy module template :
 
-# if a process in the unconfined_r domain runs an executable whose type is
-# ca647_server_t, the process should continue in ca647_server_t domain
-role unconfined_r types ca647server_t;
-type_transition unconfined_t ca647server_exec_t : process ca647server_t;
+$ sepolicy generate --init /home/lain/CA647-secure-programming/server/ca647_server
+Created the following files:
+/home/lain/CA647-secure-programming/selinux/ca647_server.te # Type Enforcement file
+/home/lain/CA647-secure-programming/selinux/ca647_server.if # Interface file
+/home/lain/CA647-secure-programming/selinux/ca647_server.fc # File Contexts file
+/home/lain/CA647-secure-programming/selinux/ca647_server_selinux.spec # Spec file
+/home/lain/CA647-secure-programming/selinux/ca647_server.sh # Setup Script
 
-For the moment, the two declared types are useless because nothing is allowed for
-them !
+Allow rpm builds :
 
-# ln -s /usr/share/selinux/devel/Makefile
-# make
-Compiling targeted ca647server module
-/usr/bin/checkmodule:  loading policy configuration from tmp/ca647server.tmp
-/usr/bin/checkmodule:  policy configuration loaded
-/usr/bin/checkmodule:  writing binary representation (version 17) to tmp/ca647server.mod
-Creating targeted ca647server.pp policy package
-rm tmp/ca647server.mod tmp/ca647server.mod.fc
+# dnf install fedora-packager
 
-This generated our compiled .pp file as well as .fc and .if files.
+Setup module :
 
-# make load
-Loading targeted modules: ca647server
+# ./ca647_server.sh 
+Building and Loading Policy
++ make -f /usr/share/selinux/devel/Makefile ca647_server.pp
+make: 'ca647_server.pp' is up to date.
++ /usr/sbin/semodule -i ca647_server.pp
++ sepolicy manpage -p . -d ca647_server_t
+./ca647_server_selinux.8
++ /sbin/restorecon -F -R -v /home/lain/CA647-secure-programming/server/ca647_server
+++ pwd
++ pwd=/home/lain/CA647-secure-programming/selinux
++ rpmbuild --define '_sourcedir /home/lain/CA647-secure-programming/selinux' --define '_specdir /home/lain/CA647-secure-programming/selinux' --define '_builddir /home/lain/CA647-secure-programming/selinux' --define '_srcrpmdir /home/lain/CA647-secure-programming/selinux' --define '_rpmdir /home/lain/CA647-secure-programming/selinux' --define '_buildrootdir /home/lain/CA647-secure-programming/selinux/.build' -ba ca647_server_selinux.spec
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.jmeF7k
++ umask 022
++ cd /home/lain/CA647-secure-programming/selinux
++ '[' /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386 '!=' / ']'
++ rm -rf /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386
+++ dirname /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386
++ mkdir -p /home/lain/CA647-secure-programming/selinux/.build
++ mkdir /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386
++ install -d /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/selinux/packages
++ install -m 644 /home/lain/CA647-secure-programming/selinux/ca647_server.pp /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/selinux/packages
++ install -d /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/selinux/devel/include/contrib
++ install -m 644 /home/lain/CA647-secure-programming/selinux/ca647_server.if /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/selinux/devel/include/contrib/
++ install -d /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/man/man8/
++ install -m 644 /home/lain/CA647-secure-programming/selinux/ca647_server_selinux.8 /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/usr/share/man/man8/ca647_server_selinux.8
++ install -d /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386/etc/selinux/targeted/contexts/users/
++ /usr/lib/rpm/check-buildroot
++ /usr/lib/rpm/brp-compress
++ /usr/lib/rpm/brp-strip /usr/bin/strip
++ /usr/lib/rpm/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /usr/lib/rpm/brp-strip-static-archive /usr/bin/strip
++ /usr/lib/rpm/brp-python-bytecompile /usr/bin/python 1
++ /usr/lib/rpm/brp-python-hardlink
++ /usr/lib/rpm/redhat/brp-java-repack-jars
+Processing files: ca647_server_selinux-1.0-1.fc24.noarch
+Provides: ca647_server_selinux = 1.0-1.fc24
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+Requires(post): /bin/sh policycoreutils selinux-policy-base >= 3.13.1-191
+Requires(postun): /bin/sh policycoreutils
+Checking for unpackaged file(s): /usr/lib/rpm/check-files /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386
+Wrote: /home/lain/CA647-secure-programming/selinux/ca647_server_selinux-1.0-1.fc24.src.rpm
+Wrote: /home/lain/CA647-secure-programming/selinux/noarch/ca647_server_selinux-1.0-1.fc24.noarch.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.frIT43
++ umask 022
++ cd /home/lain/CA647-secure-programming/selinux
++ /usr/bin/rm -rf /home/lain/CA647-secure-programming/selinux/.build/ca647_server_selinux-1.0-1.fc24.i386
++ exit 0
 
-This loaded the module so it can be used by SELinux.
+Checking server security context type :
 
-# checkmodule -M -m ca647server.te -o ca647server.mod
-checkmodule:  loading policy configuration from ca647server.te
-checkmodule:  policy configuration loaded
-checkmodule:  writing binary representation (version 17) to ca647server.mod
+$ ls -Z ca647_server
+system_u:object_r:ca647_server_exec_t:s0 ca647_server
 
-# semodule -i ca647server.pp                      ; install
-# setenforce 0                                    ; switch to permissive mode
-# chcon -r ca647server_exec_t ca647_server        ; set type of our server
-# ls -Z ca647_server                              ; verify security context
-unconfined_u:ca647server_exec_t:user_home_t:s0 ca647_server
-# setenforce 1                                    ; switch to enforced mode
+Checking who if unconfined_t is allowed to execute ca647_server_exec_t
 
+$ sesearch -s unconfined_t -t ca647_server_exec_t -c file -p execute -Ad
+Found 1 semantic av rules:
+   allow unconfined_t ca647_server_exec_t : file { execute entrypoint } ; 
 
+ca647_server_exec_t is an entrypoint for :
 
-LAST rules of our .te are not working :'(
+$ sesearch -t ca647_server_exec_t -c file -p entrypoint -Ad
+Found 2 semantic av rules:
+   allow ca647_server_t ca647_server_exec_t : file { ioctl read getattr lock execute execute_no_trans entrypoint open } ; 
+   allow unconfined_t ca647_server_exec_t : file { execute entrypoint } ;
 
-[root@ca647 server]# ps -Z
-LABEL                             PID TTY          TIME CMD
-unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 3391 pts/2 00:00:00 su
-unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 3397 pts/2 00:00:00 bash bash is unconfined_r domain OK
-unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 5456 pts/2 00:00:00 ps
-[root@ca647 server]# ls -Z ca647_server
-unconfined_u:ca647server_exec_t:user_home_t:s0 ca647_server ca647srver_exec_t domain OK
-[root@ca647 server]# ./ca647_server &
-[1] 5460
-[root@ca647 server]# ps -Z | grep ca647
-unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 5460 pts/2 00:00:00 ca647_server ; mais l'héritage :(
+Process domain transition permissions
 
-Devrait être dans son propre domaine. Ensuite on le lance, on regarde les warning dans le log et on en tire des
-règles avec audit2allow. Ensuite on fait la vidéo et on récupère les points
+$ sesearch -t ca647_server_t -c process -p transition -Ad
+Found 1 semantic av rules:
+   allow unconfined_t ca647_server_t : process transition ;
 
 
-
-
-
-
+After building my selinux module this way, I am not to be able to start it. This is
+something I wanted because there was no explicit exec permission on the type
+enforcment rule but there was no warning in the audit.log file so I was not able to
+write the rule with audit2allow as I planned to do. I don't have time to investigate
+more, unfortunately.
+I wish I had more time to experiment with mem exec, stack exec, socket binding rules
+and boolean and much more.
 
 ##
 ### References
 ###############                                                                  ###
 
- 0x00 - https://wiki.gentoo.org/wiki/SELinux
+ 0x00 - https://wiki.gentoo.org/wiki/SELinux (as usual, it's a great documentation)
  0x01 - http://www.billauer.co.il/selinux-policy-module-howto.html
  0x02 - https://selinuxproject.org/page/Building_a_Basic_Policy
- 0x03 - 
- 0x04 - 
- 0x05 - 

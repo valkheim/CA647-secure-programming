@@ -2,5 +2,7 @@
 | Names                    | ID numbers   |
 +--------------------------+--------------+
 | Charles Paulet           | 18103197     |
-| | |
+| Pierre Blank             | 18105734     |
+| Clement Desseine         | 18103201     |
+| Theophile De Cagny       | 18103332     |
 +--------------------------+--------------+
